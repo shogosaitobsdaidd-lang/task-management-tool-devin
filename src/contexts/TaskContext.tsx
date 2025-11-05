@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Task } from '../types/task';
 import { saveToLocalStorage, loadFromLocalStorage } from '../services/storage';
@@ -15,6 +15,7 @@ type TaskAction =
 
 interface TaskContextType {
   tasks: Task[];
+  isLoading: boolean;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
   deleteTask: (taskId: string) => void;
@@ -75,15 +76,25 @@ interface TaskProviderProps {
 
 export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
   const [tasks, dispatch] = useReducer(taskReducer, []);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadedData = loadFromLocalStorage();
-    if (loadedData && loadedData.tasks) {
-      dispatch({ type: 'LOAD_TASKS', payload: loadedData.tasks });
-    } else {
-      const sampleTasks = generateSampleTasks();
-      dispatch({ type: 'LOAD_TASKS', payload: sampleTasks });
-    }
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const loadedData = loadFromLocalStorage();
+        if (loadedData && loadedData.tasks) {
+          dispatch({ type: 'LOAD_TASKS', payload: loadedData.tasks });
+        } else {
+          const sampleTasks = generateSampleTasks();
+          dispatch({ type: 'LOAD_TASKS', payload: sampleTasks });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -140,6 +151,7 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
 
   const value: TaskContextType = {
     tasks,
+    isLoading,
     addTask,
     updateTask,
     deleteTask,
