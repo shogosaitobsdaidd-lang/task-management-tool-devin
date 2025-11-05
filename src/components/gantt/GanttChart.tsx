@@ -6,7 +6,7 @@ import { TaskList } from '../task/TaskList';
 import { TimeAxis } from './TimeAxis';
 import { GridLines } from './GridLines';
 import { TodayMarker } from './TodayMarker';
-import { DraggableTaskBar } from './DraggableTaskBar';
+import { ResizableTaskBar } from './ResizableTaskBar';
 import { getTotalHeight, getTotalWidth, isTaskVisible } from '../../utils/coordinates';
 import { TASK_BAR_HEIGHT, TASK_BAR_MARGIN, PIXELS_PER_DAY } from '../../constants/config';
 import { snapToDay } from '../../utils/date';
@@ -63,6 +63,13 @@ export const GanttChart: React.FC = () => {
     updateTask(task.id, {
       startDate: newStartDate.toISOString().split('T')[0],
       endDate: newEndDate.toISOString().split('T')[0],
+    });
+  };
+
+  const handleResize = (taskId: string, newStartDate: string, newEndDate: string) => {
+    updateTask(taskId, {
+      startDate: newStartDate,
+      endDate: newEndDate,
     });
   };
 
@@ -147,7 +154,7 @@ export const GanttChart: React.FC = () => {
               {visibleTasks.map((task) => {
                 const taskIndex = tasks.findIndex((t) => t.id === task.id);
                 return (
-                  <DraggableTaskBar
+                  <ResizableTaskBar
                     key={task.id}
                     task={task}
                     taskIndex={taskIndex}
@@ -155,6 +162,7 @@ export const GanttChart: React.FC = () => {
                     pixelsPerDay={pixelsPerDay}
                     zoom={viewSettings.zoom}
                     onClick={handleTaskClick}
+                    onResize={handleResize}
                   />
                 );
               })}
