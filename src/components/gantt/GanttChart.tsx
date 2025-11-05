@@ -1,16 +1,19 @@
 import React, { useState, useRef } from 'react';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useTasks } from '../../contexts/TaskContext';
 import { useView } from '../../contexts/ViewContext';
 import { TaskList } from '../task/TaskList';
 import { TimeAxis } from './TimeAxis';
 import { GridLines } from './GridLines';
 import { TodayMarker } from './TodayMarker';
-import { TaskBar } from './TaskBar';
+import { DraggableTaskBar } from './DraggableTaskBar';
 import { getTotalHeight, getTotalWidth, isTaskVisible } from '../../utils/coordinates';
 import { TASK_BAR_HEIGHT, TASK_BAR_MARGIN, PIXELS_PER_DAY } from '../../constants/config';
+import { snapToDay } from '../../utils/date';
+import { addDays } from 'date-fns';
 
 export const GanttChart: React.FC = () => {
-  const { tasks } = useTasks();
+  const { tasks, updateTask } = useTasks();
   const { viewSettings, selectedTaskId, openEditModal, setSelectedTaskId } = useView();
   const [scrollTop, setScrollTop] = useState(0);
   const chartPanelRef = useRef<HTMLDivElement>(null);
@@ -40,12 +43,36 @@ export const GanttChart: React.FC = () => {
     setScrollTop(newScrollTop);
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, delta } = event;
+    const task = tasks.find((t) => t.id === active.id);
+    
+    if (!task || !delta) return;
+
+    const pixelsMoved = delta.x;
+    const snappedPixels = snapToDay(pixelsMoved, pixelsPerDay * viewSettings.zoom);
+    const daysMoved = Math.round(snappedPixels / (pixelsPerDay * viewSettings.zoom));
+
+    if (daysMoved === 0) return;
+
+    const currentStartDate = new Date(task.startDate);
+    const currentEndDate = new Date(task.endDate);
+    const newStartDate = addDays(currentStartDate, daysMoved);
+    const newEndDate = addDays(currentEndDate, daysMoved);
+
+    updateTask(task.id, {
+      startDate: newStartDate.toISOString().split('T')[0],
+      endDate: newEndDate.toISOString().split('T')[0],
+    });
+  };
+
   const visibleTasks = tasks.filter((task) =>
     isTaskVisible(task, viewSettings.startDate, viewSettings.endDate)
   );
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="flex flex-col h-full bg-gray-50">
       {/* Header with TimeAxis */}
       <div className="flex border-b border-gray-300 bg-white">
         {/* Left spacer for task list */}
@@ -120,7 +147,7 @@ export const GanttChart: React.FC = () => {
               {visibleTasks.map((task) => {
                 const taskIndex = tasks.findIndex((t) => t.id === task.id);
                 return (
-                  <TaskBar
+                  <DraggableTaskBar
                     key={task.id}
                     task={task}
                     taskIndex={taskIndex}
@@ -135,6 +162,7 @@ export const GanttChart: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </DndContext>
   );
 };
