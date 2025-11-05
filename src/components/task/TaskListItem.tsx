@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Task } from '../../types/task';
 import { TASK_BAR_HEIGHT, TASK_BAR_MARGIN } from '../../constants/config';
 
@@ -9,7 +9,7 @@ interface TaskListItemProps {
   onClick: (taskId: string) => void;
 }
 
-export const TaskListItem: React.FC<TaskListItemProps> = ({
+export const TaskListItem: React.FC<TaskListItemProps> = React.memo(({
   task,
   taskIndex,
   isSelected,
@@ -18,9 +18,9 @@ export const TaskListItem: React.FC<TaskListItemProps> = ({
   const height = TASK_BAR_HEIGHT + TASK_BAR_MARGIN;
   const top = taskIndex * height;
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     onClick(task.id);
-  };
+  }, [onClick, task.id]);
 
   return (
     <div
@@ -63,4 +63,4 @@ export const TaskListItem: React.FC<TaskListItemProps> = ({
       </div>
     </div>
   );
-};
+});
