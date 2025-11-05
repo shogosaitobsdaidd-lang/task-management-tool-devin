@@ -3,6 +3,7 @@ import { Plus, Download, Upload, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useView } from '../../contexts/ViewContext';
 import { useTasks } from '../../contexts/TaskContext';
+import { useToast } from '../../hooks/use-toast';
 import { TimeScale } from '../../types/view';
 import { exportAndDownloadTasks } from '../../services/export';
 import { importFromFile } from '../../services/import';
@@ -10,6 +11,7 @@ import { importFromFile } from '../../services/import';
 export const Toolbar: React.FC = () => {
   const { viewSettings, updateViewSettings, openEditModal } = useView();
   const { tasks, importTasks } = useTasks();
+  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddTask = () => {
@@ -19,10 +21,17 @@ export const Toolbar: React.FC = () => {
   const handleExport = () => {
     try {
       exportAndDownloadTasks(tasks);
-      console.log('Tasks exported successfully');
+      toast({
+        title: 'Export successful',
+        description: `${tasks.length} tasks exported successfully.`,
+      });
     } catch (error) {
       console.error('Failed to export tasks:', error);
-      alert('Failed to export tasks. Please try again.');
+      toast({
+        title: 'Export failed',
+        description: 'Failed to export tasks. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -37,11 +46,18 @@ export const Toolbar: React.FC = () => {
     try {
       const importedTasks = await importFromFile(file);
       importTasks(importedTasks);
-      console.log(`Successfully imported ${importedTasks.length} tasks`);
+      toast({
+        title: 'Import successful',
+        description: `${importedTasks.length} tasks imported successfully.`,
+      });
     } catch (error) {
       console.error('Failed to import tasks:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Failed to import tasks: ${errorMessage}`);
+      toast({
+        title: 'Import failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     }
     
     event.target.value = '';
