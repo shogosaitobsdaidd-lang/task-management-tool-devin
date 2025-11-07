@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Task } from '../../types/task';
 import { TaskBar } from './TaskBar';
 import { getTaskX, getTaskWidth, getTaskY } from '../../utils/coordinates';
 import { TASK_BAR_HEIGHT, TASK_BAR_MARGIN } from '../../constants/config';
 import { differenceInDays, addDays } from 'date-fns';
+import { requestFrame, cancelFrame } from '../../utils/performance';
 
 interface ResizableTaskBarProps {
   task: Task;
@@ -28,8 +29,10 @@ export const ResizableTaskBar: React.FC<ResizableTaskBarProps> = ({
   const [tempDates, setTempDates] = useState<{ start: Date; end: Date } | null>(null);
   const startXRef = useRef<number>(0);
   const originalDatesRef = useRef<{ start: Date; end: Date } | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const lastMouseEventRef = useRef<MouseEvent | null>(null);
 
-  const handleResizeStart = (e: React.MouseEvent, handle: 'left' | 'right') => {
+  const handleResizeStart = useCallback((e: React.MouseEvent, handle: 'left' | 'right') => {
     e.stopPropagation();
     setIsResizing(true);
     startXRef.current = e.clientX;
@@ -38,8 +41,9 @@ export const ResizableTaskBar: React.FC<ResizableTaskBarProps> = ({
       end: new Date(task.endDate),
     };
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      if (!originalDatesRef.current) return;
+    const updateDates = () => {
+      const moveEvent = lastMouseEventRef.current;
+      if (!moveEvent || !originalDatesRef.current) return;
 
       const deltaX = moveEvent.clientX - startXRef.current;
       const effectivePixelsPerDay = pixelsPerDay * zoom;
@@ -63,7 +67,22 @@ export const ResizableTaskBar: React.FC<ResizableTaskBarProps> = ({
       setTempDates({ start: newStart, end: newEnd });
     };
 
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      lastMouseEventRef.current = moveEvent;
+      
+      if (rafIdRef.current !== null) {
+        cancelFrame(rafIdRef.current);
+      }
+      
+      rafIdRef.current = requestFrame(updateDates);
+    };
+
     const handleMouseUp = () => {
+      if (rafIdRef.current !== null) {
+        cancelFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+      
       if (tempDates) {
         const newStartDate = tempDates.start.toISOString().split('T')[0];
         const newEndDate = tempDates.end.toISOString().split('T')[0];
@@ -72,13 +91,14 @@ export const ResizableTaskBar: React.FC<ResizableTaskBarProps> = ({
       setIsResizing(false);
       setTempDates(null);
       originalDatesRef.current = null;
+      lastMouseEventRef.current = null;
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  };
+  }, [task.startDate, task.endDate, task.id, pixelsPerDay, zoom, onResize, tempDates]);
 
   const displayTask = tempDates
     ? {
