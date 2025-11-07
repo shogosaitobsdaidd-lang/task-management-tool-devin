@@ -78,23 +78,23 @@ export const Toolbar: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-2">
+    <div className="bg-white border-b border-gray-200 px-4 py-2" role="toolbar" aria-label="Task management toolbar">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <Button onClick={handleAddTask} size="sm" className="gap-2">
-            <Plus className="w-4 h-4" />
+          <Button onClick={handleAddTask} size="sm" className="gap-2" aria-label="Add new task">
+            <Plus className="w-4 h-4" aria-hidden="true" />
             Add Task
           </Button>
           
-          <div className="h-6 w-px bg-gray-300" />
+          <div className="h-6 w-px bg-gray-300" aria-hidden="true" />
           
-          <Button onClick={handleExport} variant="outline" size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
+          <Button onClick={handleExport} variant="outline" size="sm" className="gap-2" aria-label="Export tasks to JSON file">
+            <Download className="w-4 h-4" aria-hidden="true" />
             Export
           </Button>
           
-          <Button onClick={handleImport} variant="outline" size="sm" className="gap-2">
-            <Upload className="w-4 h-4" />
+          <Button onClick={handleImport} variant="outline" size="sm" className="gap-2" aria-label="Import tasks from JSON file">
+            <Upload className="w-4 h-4" aria-hidden="true" />
             Import
           </Button>
           
@@ -104,11 +104,12 @@ export const Toolbar: React.FC = () => {
             accept=".json"
             onChange={handleFileChange}
             className="hidden"
+            aria-label="File input for importing tasks"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-gray-100 rounded-md p-1">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-md p-1" role="group" aria-label="Time scale selector">
             <button
               onClick={() => handleTimeScaleChange('day')}
               className={`px-3 py-1 text-sm rounded ${
@@ -116,6 +117,8 @@ export const Toolbar: React.FC = () => {
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
+              aria-label="View by day"
+              aria-pressed={viewSettings.timeScale === 'day'}
             >
               Day
             </button>
@@ -126,6 +129,8 @@ export const Toolbar: React.FC = () => {
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
+              aria-label="View by week"
+              aria-pressed={viewSettings.timeScale === 'week'}
             >
               Week
             </button>
@@ -136,22 +141,24 @@ export const Toolbar: React.FC = () => {
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
+              aria-label="View by month"
+              aria-pressed={viewSettings.timeScale === 'month'}
             >
               Month
             </button>
           </div>
 
-          <div className="h-6 w-px bg-gray-300" />
+          <div className="h-6 w-px bg-gray-300" aria-hidden="true" />
 
-          <div className="flex items-center gap-1">
-            <Button onClick={handleZoomOut} variant="outline" size="sm">
-              <ZoomOut className="w-4 h-4" />
+          <div className="flex items-center gap-1" role="group" aria-label="Zoom controls">
+            <Button onClick={handleZoomOut} variant="outline" size="sm" aria-label="Zoom out">
+              <ZoomOut className="w-4 h-4" aria-hidden="true" />
             </Button>
-            <span className="text-sm text-gray-600 min-w-[3rem] text-center">
+            <span className="text-sm text-gray-600 min-w-[3rem] text-center" aria-live="polite" aria-label={`Current zoom level: ${Math.round(viewSettings.zoom * 100)} percent`}>
               {Math.round(viewSettings.zoom * 100)}%
             </span>
-            <Button onClick={handleZoomIn} variant="outline" size="sm">
-              <ZoomIn className="w-4 h-4" />
+            <Button onClick={handleZoomIn} variant="outline" size="sm" aria-label="Zoom in">
+              <ZoomIn className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
