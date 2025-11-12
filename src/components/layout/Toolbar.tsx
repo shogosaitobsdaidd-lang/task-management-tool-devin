@@ -4,10 +4,11 @@ import { Button } from '../ui/button';
 import { useView } from '../../contexts/ViewContext';
 import { useTasks } from '../../contexts/TaskContext';
 import { TimeScale } from '../../types/view';
+import { exportAndDownloadTasks } from '../../services/export';
 
 export const Toolbar: React.FC = () => {
   const { viewSettings, updateViewSettings, openEditModal } = useView();
-  const { importTasks, exportTasks } = useTasks();
+  const { tasks, importTasks } = useTasks();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddTask = () => {
@@ -15,16 +16,13 @@ export const Toolbar: React.FC = () => {
   };
 
   const handleExport = () => {
-    const data = exportTasks();
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `tasks-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      exportAndDownloadTasks(tasks);
+      console.log('Tasks exported successfully');
+    } catch (error) {
+      console.error('Failed to export tasks:', error);
+      alert('Failed to export tasks. Please try again.');
+    }
   };
 
   const handleImport = () => {
