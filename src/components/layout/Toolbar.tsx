@@ -5,6 +5,7 @@ import { useView } from '../../contexts/ViewContext';
 import { useTasks } from '../../contexts/TaskContext';
 import { TimeScale } from '../../types/view';
 import { exportAndDownloadTasks } from '../../services/export';
+import { importFromFile } from '../../services/import';
 
 export const Toolbar: React.FC = () => {
   const { viewSettings, updateViewSettings, openEditModal } = useView();
@@ -29,22 +30,19 @@ export const Toolbar: React.FC = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const tasks = JSON.parse(content);
-        importTasks(tasks);
-      } catch (error) {
-        console.error('Failed to import tasks:', error);
-        alert('Failed to import tasks. Please check the file format.');
-      }
-    };
-    reader.readAsText(file);
+    try {
+      const importedTasks = await importFromFile(file);
+      importTasks(importedTasks);
+      console.log(`Successfully imported ${importedTasks.length} tasks`);
+    } catch (error) {
+      console.error('Failed to import tasks:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to import tasks: ${errorMessage}`);
+    }
     
     event.target.value = '';
   };
