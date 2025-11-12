@@ -10,9 +10,10 @@ interface TaskFormProps {
   task?: Task;
   onSave: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
+  onDelete?: () => void;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel, onDelete }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -199,13 +200,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel }) =>
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit">
-          {task ? 'Update Task' : 'Create Task'}
-        </Button>
+      <div className="flex justify-between pt-4">
+        {onDelete && (
+          <Button type="button" variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        )}
+        <div className="flex gap-2 ml-auto">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">
+            {task ? 'Update Task' : 'Create Task'}
+          </Button>
+        </div>
       </div>
     </form>
   );
