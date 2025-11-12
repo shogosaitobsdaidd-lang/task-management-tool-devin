@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Task } from '../types/task';
 import { saveToLocalStorage, loadFromLocalStorage } from '../services/storage';
 import { DEFAULT_TIME_SCALE } from '../constants/config';
+import { generateSampleTasks } from '../data/sampleTasks';
 
 type TaskAction =
   | { type: 'ADD_TASK'; payload: Task }
@@ -79,6 +80,9 @@ export const TaskProvider: React.FC<TaskProviderProps> = ({ children }) => {
     const loadedData = loadFromLocalStorage();
     if (loadedData && loadedData.tasks) {
       dispatch({ type: 'LOAD_TASKS', payload: loadedData.tasks });
+    } else {
+      const sampleTasks = generateSampleTasks();
+      dispatch({ type: 'LOAD_TASKS', payload: sampleTasks });
     }
   }, []);
 
