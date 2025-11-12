@@ -13,7 +13,7 @@ import { snapToDay } from '../../utils/date';
 import { addDays } from 'date-fns';
 
 export const GanttChart: React.FC = () => {
-  const { tasks, updateTask } = useTasks();
+  const { tasks, updateTask, reorderTasks } = useTasks();
   const { viewSettings, selectedTaskId, openEditModal, setSelectedTaskId } = useView();
   const [scrollTop, setScrollTop] = useState(0);
   const chartPanelRef = useRef<HTMLDivElement>(null);
@@ -110,6 +110,7 @@ export const GanttChart: React.FC = () => {
             tasks={tasks}
             selectedTaskId={selectedTaskId}
             onTaskClick={handleTaskClick}
+            onReorder={reorderTasks}
             scrollTop={scrollTop}
             onScroll={handleTaskListScroll}
           />
