@@ -86,3 +86,14 @@ export const isDateInRange = (
   
   return dateTime >= startTime && dateTime <= endTime;
 };
+
+/**
+ * Snap a pixel value to the nearest day boundary
+ * @param pixels - The pixel value to snap
+ * @param pixelsPerDay - Number of pixels per day
+ * @returns The snapped pixel value
+ */
+export const snapToDay = (pixels: number, pixelsPerDay: number): number => {
+  const days = Math.round(pixels / pixelsPerDay);
+  return days * pixelsPerDay;
+};
