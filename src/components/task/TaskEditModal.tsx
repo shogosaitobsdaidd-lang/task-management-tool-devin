@@ -9,11 +9,13 @@ import { TaskForm } from './TaskForm';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
 import { useView } from '../../contexts/ViewContext';
 import { useTasks } from '../../contexts/TaskContext';
+import { useToast } from '../../hooks/use-toast';
 import { Task } from '../../types/task';
 
 export const TaskEditModal: React.FC = () => {
   const { isEditModalOpen, closeEditModal, selectedTaskId } = useView();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
+  const { toast } = useToast();
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -27,12 +29,28 @@ export const TaskEditModal: React.FC = () => {
   }, [selectedTaskId, tasks]);
 
   const handleSave = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (editingTask) {
-      updateTask(editingTask.id, taskData);
-    } else {
-      addTask(taskData);
+    try {
+      if (editingTask) {
+        updateTask(editingTask.id, taskData);
+        toast({
+          title: 'Task updated',
+          description: `"${taskData.name}" has been updated successfully.`,
+        });
+      } else {
+        addTask(taskData);
+        toast({
+          title: 'Task created',
+          description: `"${taskData.name}" has been created successfully.`,
+        });
+      }
+      closeEditModal();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to save task. Please try again.',
+        variant: 'destructive',
+      });
     }
-    closeEditModal();
   };
 
   const handleCancel = () => {
@@ -45,9 +63,21 @@ export const TaskEditModal: React.FC = () => {
 
   const handleDeleteConfirm = () => {
     if (editingTask) {
-      deleteTask(editingTask.id);
-      setShowDeleteConfirm(false);
-      closeEditModal();
+      try {
+        deleteTask(editingTask.id);
+        toast({
+          title: 'Task deleted',
+          description: `"${editingTask.name}" has been deleted successfully.`,
+        });
+        setShowDeleteConfirm(false);
+        closeEditModal();
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete task. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
