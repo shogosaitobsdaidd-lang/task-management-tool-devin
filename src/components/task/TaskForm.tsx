@@ -53,6 +53,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel, onDe
 
     if (!name.trim()) {
       newErrors.name = 'Task name is required';
+    } else if (name.trim().length > 200) {
+      newErrors.name = 'Task name must be 200 characters or less';
+    }
+
+    if (description.length > 2000) {
+      newErrors.description = 'Description must be 2000 characters or less';
     }
 
     if (!startDate) {
@@ -65,6 +71,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel, onDe
 
     if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
       newErrors.endDate = 'End date must be after start date';
+    }
+
+    if (assignee.length > 100) {
+      newErrors.assignee = 'Assignee name must be 100 characters or less';
     }
 
     if (progress < 0 || progress > 100) {
@@ -120,7 +130,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel, onDe
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Enter task description"
           rows={3}
+          className={errors.description ? 'border-red-500' : ''}
         />
+        {errors.description && (
+          <p className="text-sm text-red-500">{errors.description}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -160,7 +174,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, onSave, onCancel, onDe
           value={assignee}
           onChange={(e) => setAssignee(e.target.value)}
           placeholder="Enter assignee name"
+          className={errors.assignee ? 'border-red-500' : ''}
         />
+        {errors.assignee && (
+          <p className="text-sm text-red-500">{errors.assignee}</p>
+        )}
       </div>
 
       <div className="space-y-2">
