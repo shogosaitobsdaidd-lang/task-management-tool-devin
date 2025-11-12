@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Task } from '../../types/task';
 import { getTaskX, getTaskWidth, getTaskY } from '../../utils/coordinates';
 import { TASK_BAR_HEIGHT, TASK_BAR_MARGIN } from '../../constants/config';
@@ -12,7 +12,7 @@ interface TaskBarProps {
   onClick: (taskId: string) => void;
 }
 
-export const TaskBar: React.FC<TaskBarProps> = ({
+export const TaskBar: React.FC<TaskBarProps> = React.memo(({
   task,
   taskIndex,
   timelineStartDate,
@@ -22,23 +22,25 @@ export const TaskBar: React.FC<TaskBarProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const x = getTaskX(task, timelineStartDate, pixelsPerDay * zoom);
-  const width = getTaskWidth(task, pixelsPerDay * zoom);
-  const y = getTaskY(taskIndex, TASK_BAR_HEIGHT, TASK_BAR_MARGIN);
+  const effectivePixelsPerDay = useMemo(() => pixelsPerDay * zoom, [pixelsPerDay, zoom]);
+  
+  const x = useMemo(() => getTaskX(task, timelineStartDate, effectivePixelsPerDay), [task, timelineStartDate, effectivePixelsPerDay]);
+  const width = useMemo(() => getTaskWidth(task, effectivePixelsPerDay), [task, effectivePixelsPerDay]);
+  const y = useMemo(() => getTaskY(taskIndex, TASK_BAR_HEIGHT, TASK_BAR_MARGIN), [taskIndex]);
 
-  const progressWidth = (width * task.progress) / 100;
+  const progressWidth = useMemo(() => (width * task.progress) / 100, [width, task.progress]);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     onClick(task.id);
-  };
+  }, [onClick, task.id]);
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     setIsHovered(true);
-  };
+  }, []);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
-  };
+  }, []);
 
   return (
     <g
@@ -115,4 +117,4 @@ export const TaskBar: React.FC<TaskBarProps> = ({
       )}
     </g>
   );
-};
+});
